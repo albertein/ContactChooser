@@ -17,6 +17,8 @@
 {
     ABMultiValueRef multi = ABRecordCopyValue(person, kABPersonEmailProperty);
     NSString *email = (__bridge NSString *)ABMultiValueCopyValueAtIndex(multi, 0);
+    if (!email)
+        email = @"";
     NSString *displayName = (__bridge NSString *)ABRecordCopyCompositeName(person);
     ABMultiValueRef multiPhones = ABRecordCopyValue(person, kABPersonPhoneProperty);
     NSString* phoneNumber = @"";
