@@ -28,7 +28,7 @@ public class ContactChooserPlugin extends CordovaPlugin {
 		if (action.equals("chooseContact")) {
 
             Intent intent = new Intent(Intent.ACTION_PICK,
-                    ContactsContract.CommonDataKinds.Email.CONTENT_URI);
+                    ContactsContract.Contacts.CONTENT_URI);
             cordova.startActivityForResult(this, intent, CHOOSE_CONTACT);
 
             PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -50,9 +50,9 @@ public class ContactChooserPlugin extends CordovaPlugin {
 
             if (c.moveToFirst()) {
                 try {
-                    String contactId = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID));
+                    String contactId = c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
                     String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
-                    String email = c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.DATA));
+                    String email = "";
                     String phoneNumber = "";
                     if (Integer.parseInt(c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
                         String query = ContactsContract.CommonDataKinds.Phone.CONTACT_ID;
@@ -63,7 +63,12 @@ public class ContactChooserPlugin extends CordovaPlugin {
                         phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         phoneCursor.close();
                     }
-
+                    Cursor emailCursor = resolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
+                                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                                new String[]{ contactId }, null);
+                    if (emailCursor.moveToFirst()) 
+                        email = emailCursor.getString(emailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.DATA));
+                    emailCursor.close();
                     JSONObject contact = new JSONObject();
                     contact.put("email", email);
                     contact.put("displayName", name);
@@ -84,5 +89,4 @@ public class ContactChooserPlugin extends CordovaPlugin {
             callbackContext.error("No contact was selected.");
         }
     }
-
 }
